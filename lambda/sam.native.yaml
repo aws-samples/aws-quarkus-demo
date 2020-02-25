@@ -1,0 +1,64 @@
+  AWSTemplateFormatVersion: '2010-09-09'
+  Transform: AWS::Serverless-2016-10-31
+  Description: AWS Serverless Quarkus HTTP - com.amazon::LambdaQuarkus
+
+  Resources:
+    ApiGatewayApi:
+      Type: AWS::Serverless::Api
+      Properties:
+        StageName: prod
+
+    LambdaQuarkusNativeFunction:
+      Type: AWS::Serverless::Function
+      Properties:
+        Handler: not.used.in.provided.runtime
+        Runtime: provided
+        CodeUri: target/function.zip
+        MemorySize: 256
+        Policies:
+          - AWSLambdaBasicExecutionRole
+          - DynamoDBCrudPolicy:
+              TableName: Users
+        Timeout: 15
+        Environment:
+          Variables:
+            DISABLE_SIGNAL_HANDLERS: true
+        Events:
+          LambdaQuarkusGetAll:
+            Type: Api
+            Properties:
+              RestApiId: !Ref ApiGatewayApi
+              Path: /users
+              Method: GET
+          LambdaQuarkusGetUser:
+            Type: Api
+            Properties:
+              RestApiId: !Ref ApiGatewayApi
+              Path: /users/{userId}
+              Method: GET
+          LambdaQuarkusDeleteUser:
+            Type: Api
+            Properties:
+              RestApiId: !Ref ApiGatewayApi
+              Path: /users/{userId}
+              Method: DELETE
+          LambdaQuarkusAddUser:
+            Type: Api
+            Properties:
+              RestApiId: !Ref ApiGatewayApi
+              Path: /users
+              Method: POST
+
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: Users
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
