@@ -60,6 +60,17 @@ $ npm run build
 $ cdk deploy  // Deploys the CloudFormation template
 ```
 
+## Testing the application
+
+After the infrastructure has been created successfully, the outputs of the CloudFormation stack is the load balancer URL. You can test the application using the following statements:
+
+```
+$ curl -v -d '{"userName":"hmueller", "firstName":"Hans", "lastName":"Mueller", "age":"35"}' -H "Content-Type: application/json" -X POST http://<lb-url>:8080/users
+$ curl -v http://<lb-url>:8080/users/<user-id>
+$ curl -v http://<lb-url>:8080/users
+$ curl -v -X DELETE http://<lb-url>:8080/users/<user-id>
+```
+
 ## Contributing
 Please create a new GitHub issue for any feature requests, bugs, or documentation improvements.
 
