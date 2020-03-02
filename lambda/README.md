@@ -36,7 +36,7 @@ $ mvn clean install -e -Pnative -Dnative-image.docker-build=true
 
 ## Setting up the infrastructure and deploying the application using AWS SAM
 
-After we've built and pushed the Docker image containing the native image of the application, we need to package our application and deploy it. The SAM package command creates a zip of your code and dependencies and uploads it to S3. SAM deploy creates a Cloudformation Stack and deploys your resources.
+After we've built the AWS Lambda function (native-image or JVM-based), we need to package our application and deploy it. The SAM package command creates a zip of your code and dependencies and uploads it to S3. SAM deploy creates a Cloudformation Stack and deploys your resources.
 
 The following commands package and deploy the JVM-based version of the application.
 
@@ -52,6 +52,34 @@ If you want to deploy the native version of the application, you have to use a d
 $ sam package --template-file sam.native.yaml --output-template-file output.native.yaml --s3-bucket <your_s3_bucket>
 
 $ sam deploy --template-file output.native.yaml --stack-name APIGatewayQuarkusDemo --capabilities CAPABILITY_IAM
+```
+
+During deployment, the CloudFormation template creates the AWS Lambda function, an Amazon DynamoDB table, an Amazon API Gateway REST-API, and all necessary IAM roles.
+
+## Testing
+
+After the resources has been created successfully, you can start testing. First we want to create a user:
+
+```
+$ curl -v -d '{"userName":"jdoe", "firstName":"John", "lastName":"Doe", "age":"35"}' -H "Content-Type: application/json" -X POST  https://<your-api-gateway-url>/prod/users
+```
+
+Now we can list all users that we have created:
+
+```
+$ curl -v https://<your-api-gateway-url>/prod/users
+```
+
+Of course we can get a specific user with the `userId`:
+
+```
+$ curl -v -X GET 'https://<your-api-gateway-url>/prod/users?userId=<userId>'
+```
+
+If we want to delete the user that we've created recently, we only need to specifc the `userId`:
+
+```
+$ curl -v -X DELETE 'https://<your-api-gateway-url>/prod/users/<userId>'
 ```
 
 ## Contributing
