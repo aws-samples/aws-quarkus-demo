@@ -19,113 +19,115 @@ import com.amazon.example.pojo.User;
 import com.amazon.example.service.UserService;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.jboss.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Named("processing")
-public class ProcessingLambda implements RequestHandler<InputObject, OutputObject> {
+public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private static final Logger LOGGER = Logger.getLogger(ProcessingLambda.class);
 
-    private ObjectMapper mapper;
-
-    public ProcessingLambda() {
-        mapper = new ObjectMapper();
-        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-    }
+    private ObjectMapper mapper = new ObjectMapper();
 
     @Inject
     UserService userService;
 
     @Override
-    public OutputObject handleRequest(InputObject inputObject, Context context) {
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
 
-        OutputObject outputObject = new OutputObject();
+        Map<String, String> query = request.getQueryStringParameters();
+        LOGGER.info(String.format("[%s] Processed data", context.getAwsRequestId()));
+
+        LOGGER.info(String.format("[%s] Processed data", request));
 
         User user;
-        String str;
+        String result = "";
         List<User> userList;
 
-        switch (inputObject.getCommand()){
-            case GET:
-                user = userService.get(inputObject.getUserId());
-                LOGGER.info("GET: " + user);
-                str = null;
-                try {
-                    str = mapper.writeValueAsString(user);
-                    outputObject.setResult(str);
-                    outputObject.setRequestId(context.getAwsRequestId());
-                }
+        String httpMethod = request.getHttpMethod();
 
+        switch (httpMethod) {
+
+            case "GET":
+                Map<String, String> queryStringParameters = request.getQueryStringParameters();
+
+                String userId = null;
+
+                if (queryStringParameters != null)
+                    userId = queryStringParameters.get("userId");
+
+                if (userId == null || userId.length() == 0) {
+                    LOGGER.info("Getting all users");
+                    userList = userService.findAll();
+                    LOGGER.info("GET: " + userList);
+                    try {
+                        result = mapper.writeValueAsString(userList);
+                    } catch (JsonProcessingException exc) {
+                        LOGGER.error(exc);
+                    }
+                } else {
+                    user = userService.get(userId);
+                    LOGGER.info("GET: " + user);
+
+                    if (user.getUserId() == null)
+                        result = "";
+                    else {
+
+                        try {
+                            result = mapper.writeValueAsString(user);
+                        } catch (JsonProcessingException exc) {
+                            LOGGER.error(exc);
+                        }
+                    }
+                }
+            break;
+            case "POST":
+                String body = request.getBody();
+                try {
+                    User tmpUser = mapper.readValue(body, User.class);
+                    tmpUser.setUserId(createUserId());
+
+                    LOGGER.info("POST: " + tmpUser);
+                    userList = userService.add(tmpUser);
+                    LOGGER.info("POST: " + userList);
+
+                    result = mapper.writeValueAsString(userList);
+                }
                 catch (JsonProcessingException exc) {
                     LOGGER.error(exc);
                 }
                 break;
-            case GETALL:
-                userList = userService.findAll();
+            case "DELETE":
+                Map<String, String> pathParameters = request.getPathParameters();
 
-                LOGGER.info("GETALL: " + userList);
-                str = null;
-                try {
-                    str = mapper.writeValueAsString(userList);
-                    outputObject.setResult(str);
-                    outputObject.setRequestId(context.getAwsRequestId());
+                if (pathParameters != null) {
+                    String id = pathParameters.get("userId");
+                    userList = userService.delete(id);
+
+                    LOGGER.info("DELETE: " + userList);
+
+                    try {
+                        result = mapper.writeValueAsString(userList);
+                    } catch (JsonProcessingException exc) {
+                        LOGGER.error(exc);
+                    }
                 }
-
-                catch (JsonProcessingException exc) {
-                    LOGGER.error(exc);
-                }
-
                 break;
-            case POST:
-                user = new User();
-                user.setAge(inputObject.getAge());
-                user.setFirstName(inputObject.getFirstName());
-                user.setLastName(inputObject.getLastName());
-                user.setUserId(inputObject.getUserId());
-                user.setUserName(inputObject.getUserName());
-
-                LOGGER.info("POST: " + user);
-                userList = userService.add(user);
-                LOGGER.info("POST: " + userList);
-
-                str = null;
-                try {
-                    str = mapper.writeValueAsString(userList);
-                    outputObject.setResult(str);
-                    outputObject.setRequestId(context.getAwsRequestId());
-                }
-
-                catch (JsonProcessingException exc) {
-                    LOGGER.error(exc);
-                }
-
-                break;
-            case DELETE:
-                userList = userService.delete(inputObject.getUserId());
-
-                LOGGER.info("DELETE: " + userList);
-                str = null;
-                try {
-                    str = mapper.writeValueAsString(userList);
-                    outputObject.setResult(str);
-                    outputObject.setRequestId(context.getAwsRequestId());
-                }
-
-                catch (JsonProcessingException exc) {
-                    LOGGER.error(exc);
-                }
-
-                break;
-            default:
         }
 
-        return outputObject;
+        return new APIGatewayProxyResponseEvent().withBody(result).withStatusCode(200);
+    }
+
+    private String createUserId() {
+        return UUID.randomUUID().toString();
     }
 }
