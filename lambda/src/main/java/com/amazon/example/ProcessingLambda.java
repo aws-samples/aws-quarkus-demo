@@ -45,8 +45,6 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
 
         Map<String, String> query = request.getQueryStringParameters();
-        LOGGER.info(String.format("[%s] Processed data", context.getAwsRequestId()));
-
         LOGGER.info(String.format("[%s] Processed data", request));
 
         User user;
