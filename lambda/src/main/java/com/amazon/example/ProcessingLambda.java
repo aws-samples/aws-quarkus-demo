@@ -95,8 +95,9 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
                     tmpUser.setUserId(createUserId());
 
                     LOGGER.info("POST: " + tmpUser);
+                    String tmpId = userService.add(tmpUser);
 
-                    result = tmpUser.getUserId();
+                    result = tmpId;
                 }
                 catch (JsonProcessingException exc) {
                     LOGGER.error(exc);
@@ -107,15 +108,11 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
 
                 if (pathParameters != null) {
                     String id = pathParameters.get("userId");
-                    userList = userService.delete(id);
+                    String tmpId = userService.delete(id);
 
-                    LOGGER.info("DELETE: " + userList);
+                    LOGGER.info("DELETE: " + tmpId);
 
-                    try {
-                        result = mapper.writeValueAsString(userList);
-                    } catch (JsonProcessingException exc) {
-                        LOGGER.error(exc);
-                    }
+                    result = tmpId;
                 }
                 break;
         }
