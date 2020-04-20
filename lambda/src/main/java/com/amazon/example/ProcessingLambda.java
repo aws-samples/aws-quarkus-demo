@@ -45,6 +45,7 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
 
         Map<String, String> query = request.getQueryStringParameters();
+
         LOGGER.info(String.format("[%s] Processed data", request));
 
         User user;
@@ -79,7 +80,6 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
                     if (user.getUserId() == null)
                         result = "";
                     else {
-
                         try {
                             result = mapper.writeValueAsString(user);
                         } catch (JsonProcessingException exc) {
@@ -95,10 +95,8 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
                     tmpUser.setUserId(createUserId());
 
                     LOGGER.info("POST: " + tmpUser);
-                    userList = userService.add(tmpUser);
-                    LOGGER.info("POST: " + userList);
 
-                    result = mapper.writeValueAsString(userList);
+                    result = tmpUser.getUserId();
                 }
                 catch (JsonProcessingException exc) {
                     LOGGER.error(exc);
