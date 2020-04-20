@@ -35,19 +35,19 @@ public class UserService extends AbstractService {
                 .collect(Collectors.toList());
     }
 
-    public List<User> add(User user) {
+    public String add(User user) {
         dynamoDB.putItem(putRequest(user));
 
-        return findAll();
+        return user.getUserId();
     }
 
     public User get(String userId) {
         return User.from(dynamoDB.getItem(getRequest(userId)).item());
     }
 
-    public List<User> delete(String userId) {
+    public String delete(String userId) {
         dynamoDB.deleteItem(deleteRequest(userId));
 
-        return findAll();
+        return userId;
     }
 }
