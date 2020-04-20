@@ -95,6 +95,8 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
                     tmpUser.setUserId(createUserId());
 
                     LOGGER.info("POST: " + tmpUser);
+                    userList = userService.add(tmpUser);
+                    LOGGER.info("POST: " + userList);
 
                     result = tmpUser.getUserId();
                 }
