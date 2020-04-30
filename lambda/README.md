@@ -58,7 +58,26 @@ During deployment, the CloudFormation template creates the AWS Lambda function, 
 
 ## Testing
 
-After the resources has been created successfully, you can start testing. First we want to create a user:
+After the resources has been created successfully, you can start testing. 
+
+### Local Teing using SAM Local
+
+The AWS SAM CLI allows you to run your Lambda functions locally on your laptop in a simulated Lambda environment. This requires docker to be installed. 
+Run the following SAM CLI command to locally test your lambda function, passing the appropriate SAM template. The event parameter takes any JSON file, in this case the sample payload.json.
+
+```
+$ sam local invoke --template target/sam.jvm.yaml --event payload.json
+```
+
+The native image can also be locally tested using the sam.native.yaml template:
+
+```
+$ sam local invoke --template target/sam.native.yaml --event payload.json
+```
+
+### Testing the application in AWS
+
+First we want to create a user:
 
 ```
 $ curl -v -d '{"userName":"jdoe", "firstName":"John", "lastName":"Doe", "age":"35"}' -H "Content-Type: application/json" -X POST  https://<your-api-gateway-url>/prod/users
