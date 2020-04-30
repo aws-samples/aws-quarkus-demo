@@ -7,23 +7,29 @@
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
     <files>
-      <file>
-    	<source>${project.build.directory}${file.separator}${artifactId}-${version}-runner</source>
-    	<outputDirectory>/</outputDirectory>
-    	<destName>bootstrap</destName>
-    	<fileMode>755</fileMode>
-      </file>
-      <file>
-        <source>${env.JAVA_HOME}/lib/security/cacerts</source>
-        <outputDirectory>/</outputDirectory>
-    	<destName>cacerts</destName>
-    	<fileMode>644</fileMode>
-      </file>
-      <file>
-        <source>${env.JAVA_HOME}/lib/libsunec.so</source>
-        <outputDirectory>/</outputDirectory>
-    	<destName>libsunec.so</destName>
-    	<fileMode>644</fileMode>
-      </file>
+        <file>
+            <source>${project.build.directory}${file.separator}${artifactId}-${version}-runner</source>
+            <outputDirectory>${file.separator}</outputDirectory>
+            <destName>runner </destName>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>src/main/zip.native/bootstrap</source>
+            <outputDirectory>${file.separator}</outputDirectory>
+            <destName>bootstrap</destName>
+            <fileMode>755</fileMode>
+        </file>
+        <file>
+            <source>${env.JAVA_HOME}/lib/security/cacerts</source>
+            <outputDirectory>${file.separator}ssl</outputDirectory>
+            <destName>cacerts</destName>
+            <fileMode>644</fileMode>
+        </file>
+        <file>
+            <source>${env.JAVA_HOME}/lib/libsunec.so</source>
+            <outputDirectory>${file.separator}ssl</outputDirectory>
+            <destName>libsunec.so</destName>
+            <fileMode>644</fileMode>
+        </file>
     </files>
 </assembly>

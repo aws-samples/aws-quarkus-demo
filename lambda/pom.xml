@@ -10,11 +10,12 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <surefire-plugin.version>2.22.0</surefire-plugin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
-        <quarkus.version>1.2.1.Final</quarkus.version>
+        <quarkus.version>1.4.1.Final</quarkus.version>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <aws.sdk2.version>2.10.69</aws.sdk2.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -22,6 +23,13 @@
                 <groupId>io.quarkus</groupId>
                 <artifactId>quarkus-bom</artifactId>
                 <version>${quarkus.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws.sdk2.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -36,18 +44,55 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-amazon-dynamodb</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-jackson</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
         </dependency>
+
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>netty-nio-client</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <!-- sqs/sns/s3 etc -->
+            <artifactId>dynamodb</artifactId>
+            <exclusions>
+                <!-- exclude the apache-client and netty client -->
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>apache-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>netty-nio-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>commons-logging-jboss-logging</artifactId>
+            <version>1.0.0.Final</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
