@@ -45,6 +45,7 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent request, Context context) {
 
         Map<String, String> query = request.getQueryStringParameters();
+
         LOGGER.info(String.format("[%s] Processed data", request));
 
         User user;
@@ -79,7 +80,6 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
                     if (user.getUserId() == null)
                         result = "";
                     else {
-
                         try {
                             result = mapper.writeValueAsString(user);
                         } catch (JsonProcessingException exc) {
@@ -95,10 +95,9 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
                     tmpUser.setUserId(createUserId());
 
                     LOGGER.info("POST: " + tmpUser);
-                    userList = userService.add(tmpUser);
-                    LOGGER.info("POST: " + userList);
+                    String tmpId = userService.add(tmpUser);
 
-                    result = mapper.writeValueAsString(userList);
+                    result = tmpId;
                 }
                 catch (JsonProcessingException exc) {
                     LOGGER.error(exc);
@@ -109,15 +108,11 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
 
                 if (pathParameters != null) {
                     String id = pathParameters.get("userId");
-                    userList = userService.delete(id);
+                    String tmpId = userService.delete(id);
 
-                    LOGGER.info("DELETE: " + userList);
+                    LOGGER.info("DELETE: " + tmpId);
 
-                    try {
-                        result = mapper.writeValueAsString(userList);
-                    } catch (JsonProcessingException exc) {
-                        LOGGER.error(exc);
-                    }
+                    result = tmpId;
                 }
                 break;
         }
