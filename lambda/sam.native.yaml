@@ -8,7 +8,7 @@
       Properties:
         StageName: prod
 
-    LambdaQuarkusNativeFunction:
+    LambdaQuarkusFunction:
       Type: AWS::Serverless::Function
       Properties:
         Handler: not.used.in.provided.runtime

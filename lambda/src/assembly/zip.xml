@@ -14,7 +14,7 @@
             <fileMode>755</fileMode>
         </file>
         <file>
-            <source>src/main/zip.native/bootstrap</source>
+            <source>src/main/config/bootstrap</source>
             <outputDirectory>${file.separator}</outputDirectory>
             <destName>bootstrap</destName>
             <fileMode>755</fileMode>
