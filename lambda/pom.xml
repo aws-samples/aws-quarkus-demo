@@ -44,18 +44,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>io.quarkus</groupId>
-                <artifactId>quarkus-maven-plugin</artifactId>
-                <version>${quarkus.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
             </plugin>
@@ -72,10 +60,10 @@
     </build>
     <profiles>
         <profile>
-            <id>native</id>
+            <id>regular</id>
             <activation>
                 <property>
-                    <name>native</name>
+                    <name>!native-image.docker-build</name>
                 </property>
             </activation>
             <build>
@@ -86,6 +74,39 @@
                         <version>${quarkus.version}</version>
                         <executions>
                             <execution>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                                <configuration>
+                                    <uberJar>true</uberJar>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>native</id>
+            <activation>
+                <property>
+                    <name>native-image.docker-build</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.quarkus</groupId>
+                        <artifactId>quarkus-maven-plugin</artifactId>
+                        <version>${quarkus.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>build</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>native-image</id>
                                 <goals>
                                     <goal>native-image</goal>
                                 </goals>
