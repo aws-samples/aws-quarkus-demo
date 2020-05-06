@@ -22,6 +22,7 @@
         Timeout: 15
         Environment:
           Variables:
+            # see https://quarkus.io/guides/amazon-lambda-http
             DISABLE_SIGNAL_HANDLERS: true
         Events:
           LambdaQuarkusGetAll:
