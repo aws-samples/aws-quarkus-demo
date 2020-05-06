@@ -20,13 +20,13 @@
             <fileMode>755</fileMode>
         </file>
         <file>
-            <source>${env.JAVA_HOME}/lib/security/cacerts</source>
+            <source>${env.JAVA_HOME}/jre/lib/security/cacerts</source>
             <outputDirectory>${file.separator}ssl</outputDirectory>
             <destName>cacerts</destName>
             <fileMode>644</fileMode>
         </file>
         <file>
-            <source>${env.JAVA_HOME}/lib/libsunec.so</source>
+            <source>${env.JAVA_HOME}/jre/lib/amd64/libsunec.so</source>
             <outputDirectory>${file.separator}ssl</outputDirectory>
             <destName>libsunec.so</destName>
             <fileMode>644</fileMode>
