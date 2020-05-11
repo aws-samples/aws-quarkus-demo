@@ -16,7 +16,6 @@
         CodeUri: target/function.zip
         MemorySize: 256
         Policies:
-          - AWSLambdaBasicExecutionRole
           - DynamoDBCrudPolicy:
               TableName: Users
         Timeout: 15
@@ -54,15 +53,13 @@
       Type: AWS::DynamoDB::Table
       Properties:
         TableName: Users
+        BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: userId
             AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
 
   Outputs:
     ApiUrl:
