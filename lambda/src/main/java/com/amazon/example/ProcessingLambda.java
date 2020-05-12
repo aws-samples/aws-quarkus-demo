@@ -54,6 +54,8 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
 
         String httpMethod = request.getHttpMethod();
 
+        Map<String, String> pathParameters = request.getPathParameters();
+
         switch (httpMethod) {
 
             case "GET":
@@ -61,7 +63,9 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
 
                 String userId = null;
 
-                if (queryStringParameters != null)
+                if (pathParameters != null)
+                    userId = pathParameters.get("userId");
+                else if (queryStringParameters != null)
                     userId = queryStringParameters.get("userId");
 
                 if (userId == null || userId.length() == 0) {
@@ -87,7 +91,7 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
                         }
                     }
                 }
-            break;
+                break;
             case "POST":
                 String body = request.getBody();
                 try {
@@ -104,8 +108,6 @@ public class ProcessingLambda implements RequestHandler<APIGatewayProxyRequestEv
                 }
                 break;
             case "DELETE":
-                Map<String, String> pathParameters = request.getPathParameters();
-
                 if (pathParameters != null) {
                     String id = pathParameters.get("userId");
                     String tmpId = userService.delete(id);
