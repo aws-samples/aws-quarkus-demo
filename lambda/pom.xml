@@ -15,6 +15,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <quarkus.image>quay.io/quarkus/ubi-quarkus-native-image:20.0.0-java11</quarkus.image>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -93,6 +94,9 @@
                     <name>native-image.docker-build</name>
                 </property>
             </activation>
+             <properties>
+                <quarkus.native.builder-image>${quarkus.image}</quarkus.native.builder-image>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -112,6 +116,51 @@
                                 </goals>
                                 <configuration>
                                     <enableHttpUrlHandler>true</enableHttpUrlHandler>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.6.0</version>
+                        <executions>
+                            <execution>
+                                <id>extract-cacerts</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>run</argument>
+                                        <argument>--rm</argument>
+                                        <argument>--entrypoint</argument>
+                                        <argument>cat</argument>
+                                        <argument>${quarkus.image}</argument>
+                                        <argument>/opt/graalvm/lib/security/cacerts</argument>
+                                    </arguments>
+                                    <outputFile>${project.build.directory}/cacerts</outputFile>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>extract-libsunec</id>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <arguments>
+                                        <argument>run</argument>
+                                        <argument>--rm</argument>
+                                        <argument>--entrypoint</argument>
+                                        <argument>cat</argument>
+                                        <argument>${quarkus.image}</argument>
+                                        <argument>/opt/graalvm/lib/libsunec.so</argument>
+                                    </arguments>
+                                    <outputFile>${project.build.directory}/libsunec.so</outputFile>
                                 </configuration>
                             </execution>
                         </executions>
