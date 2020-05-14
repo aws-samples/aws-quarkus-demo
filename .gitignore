@@ -39,4 +39,5 @@ release.properties
 ecs_cdk/node_modules
 ecs_cdk/bin
 ecs_cdk/cdk.out
-packaged.*.yaml
+
+samconfig.toml
