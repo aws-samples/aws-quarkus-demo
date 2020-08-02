@@ -40,7 +40,7 @@ export class EcsCdkStack extends cdk.Stack {
     });
     
     const container = taskDef.addContainer('quarkus-demo-web', {
-      image: ecs.ContainerImage.fromRegistry("smoell/quarkus_ecs_demo:0.6"),
+      image: ecs.ContainerImage.fromRegistry("smoell/quarkus_ecs_demo:0.7"),
       memoryLimitMiB: 256,
       cpu: 256,
       logging

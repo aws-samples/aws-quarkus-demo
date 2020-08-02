@@ -1,7 +1,7 @@
-FROM quay.io/quarkus/ubi-quarkus-native-image:19.2.1 as nativebuilder
+FROM quay.io/quarkus/ubi-quarkus-native-image:20.1.0-java11 as nativebuilder
 RUN mkdir -p /tmp/ssl-libs/lib \
-  && cp /opt/graalvm/jre/lib/security/cacerts /tmp/ssl-libs \
-  && cp /opt/graalvm/jre/lib/amd64/libsunec.so /tmp/ssl-libs/lib/
+  && cp /opt/graalvm/lib/security/cacerts /tmp/ssl-libs \
+  && cp /opt/graalvm/lib/libsunec.so /tmp/ssl-libs/lib/
 
 FROM registry.access.redhat.com/ubi8/ubi-minimal
 WORKDIR /work/
