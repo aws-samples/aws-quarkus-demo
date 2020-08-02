@@ -10,12 +10,12 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <surefire-plugin.version>2.22.0</surefire-plugin.version>
         <maven.compiler.parameters>true</maven.compiler.parameters>
-        <quarkus.version>1.2.1.Final</quarkus.version>
+        <quarkus.version>1.6.1.Final</quarkus.version>
         <compiler-plugin.version>3.8.1</compiler-plugin.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <quarkus.image>quay.io/quarkus/ubi-quarkus-native-image:20.0.0-java11</quarkus.image>
+        <quarkus.image>quay.io/quarkus/ubi-quarkus-native-image:20.1.0-java11</quarkus.image>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -94,7 +94,7 @@
                     <name>native-image.docker-build</name>
                 </property>
             </activation>
-             <properties>
+            <properties>
                 <quarkus.native.builder-image>${quarkus.image}</quarkus.native.builder-image>
             </properties>
             <build>
