@@ -44,7 +44,7 @@ $ ./mvnw package -Pnative -Dquarkus.native.container-build=true -DskipTests
 Now we have to build a Docker image containing the native image of our Java application. Under `src/main/docker` we have  two different Dockerfiles: `Dockerfile.jvm` and `Dockerfile.native`. The `Dockerfile.native`-file contains a few GraalVM-specific modifications to support TLS which is necessary for the AWS SDK for Java.
 
 ```
-$ docker build -f src/main/docker/Dockerfile.native -t
+$ docker build -f src/main/docker/Dockerfile.native -t <repo/image:tag> .
 $ docker push <repo/image:tag>
 ```
 
