@@ -143,7 +143,7 @@ During deployment, the CloudFormation template creates the AWS Lambda function, 
 
 After the resources has been created successfully, you can start testing. 
 
-### Local Teing using SAM Local
+### Local Testing using SAM Local
 
 The AWS SAM CLI allows you to run your Lambda functions locally on your laptop in a simulated Lambda environment. This requires docker to be installed. 
 Run the following SAM CLI command to locally test your lambda function, passing the appropriate SAM template. The event parameter takes any JSON file, in this case the sample payload.json.
