@@ -63,10 +63,6 @@
       <groupId>software.amazon.awssdk</groupId>
       <artifactId>netty-nio-client</artifactId>
     </dependency>
-    <dependency>
-      <groupId>software.amazon.awssdk</groupId>
-      <artifactId>url-connection-client</artifactId>
-    </dependency>
   </dependencies>
   <build>
     <plugins>

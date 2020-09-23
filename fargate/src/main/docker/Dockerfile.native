@@ -1,3 +1,19 @@
+####
+# This Dockerfile is used in order to build a container that runs the Quarkus application in native (no JVM) mode
+#
+# Before building the docker image run:
+#
+# mvn package -Pnative -Dquarkus.native.container-build=true
+#
+# Then, build the image with:
+#
+# docker build -f src/main/docker/Dockerfile.native -t quarkus/user-service-native .
+#
+# Then run the container using:
+#
+# docker run -i --rm -p 8080:8080 quarkus/user-service-native
+#
+###
 FROM quay.io/quarkus/ubi-quarkus-native-image:20.1.0-java11 as nativebuilder
 RUN mkdir -p /tmp/ssl-libs/lib \
   && cp /opt/graalvm/lib/security/cacerts /tmp/ssl-libs \
