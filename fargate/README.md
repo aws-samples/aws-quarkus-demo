@@ -56,7 +56,6 @@ After we've built and pushed the Docker image containing the native image of the
 $ npm install -g aws-cdk
 $ cd ecs_cdk
 $ npm install
-$ npm run build
 $ cdk deploy  // Deploys the CloudFormation template
 ```
 

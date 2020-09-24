@@ -3,9 +3,8 @@ import * as cdk from '@aws-cdk/core';
 import ec2 = require("@aws-cdk/aws-ec2");
 import eks = require("@aws-cdk/aws-eks");
 import dynamodb = require('@aws-cdk/aws-dynamodb');
-import iam = require("@aws-cdk/aws-iam");
 
-export class EksCdkJsStack extends cdk.Stack {
+class EksCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -112,3 +111,11 @@ export class EksCdkJsStack extends cdk.Stack {
 
   }
 }
+
+const app = new cdk.App();
+new EksCdkStack(app, 'EksCdkStack', {
+  env: {
+    region: process.env.CDK_DEFAULT_REGION,
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+  }
+});
