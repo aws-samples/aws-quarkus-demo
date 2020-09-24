@@ -36,8 +36,8 @@ release.properties
 .mvn
 
 # CDK
-ecs_cdk/node_modules
-ecs_cdk/bin
-ecs_cdk/cdk.out
+node_modules
+bin
+cdk.out
 
 samconfig.toml
