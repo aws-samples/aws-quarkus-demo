@@ -1,8 +1,8 @@
 {
-  "name": "eks_cdk_js",
+  "name": "eks_cdk",
   "version": "0.1.0",
   "bin": {
-    "eks_cdk_js": "bin/eks_cdk_js.js"
+    "eks_cdk_js": "lib/eks_cdk-stack.js"
   },
   "scripts": {
     "build": "tsc",

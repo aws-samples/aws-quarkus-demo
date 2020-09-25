@@ -6,7 +6,7 @@ import dynamodb = require('@aws-cdk/aws-dynamodb');
 import ecs_patterns = require("@aws-cdk/aws-ecs-patterns");
 import iam = require("@aws-cdk/aws-iam");
 
-export class EcsCdkStack extends cdk.Stack {
+class EcsCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -71,5 +71,12 @@ export class EcsCdkStack extends cdk.Stack {
     
     new cdk.CfnOutput(this, 'LoadBalancerDNS', { value: fargateService.loadBalancer.loadBalancerDnsName });
   }
-
 }
+
+const app = new cdk.App();
+new EcsCdkStack(app, 'EcsCdkStack', {
+  env: {
+    region: process.env.CDK_DEFAULT_REGION,
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+  }
+});
