@@ -36,6 +36,7 @@ release.properties
 .mvn
 
 # CDK
+cdk.context.json
 node_modules
 bin
 cdk.out
