@@ -25,7 +25,6 @@ public class HealthResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("check")
     public String check() {
         return "OK";
     }
