@@ -41,6 +41,9 @@ class EksCdkStack extends cdk.Stack {
           metadata: { labels: appLabel },
           spec: {
             serviceAccountName: sa.serviceAccountName,
+            securityContext: {    // To fix the file permission of the access token file, see https://github.com/kubernetes-sigs/external-dns/pull/1185
+              fsGroup: 65534
+            },
             containers: [
               {
                 name: "quarkus-demo-web",
