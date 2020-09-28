@@ -14,44 +14,19 @@ class EksCdkStack extends cdk.Stack {
     });
     
     // create EKS cluster
-    const cluster = new eks.Cluster(this, "quarkus-demo-cluster",{
+    const cluster = new eks.FargateCluster(this, "quarkus-demo-cluster",{
         clusterName: "quarkus-demo-cluster",
-        vpc: vpc,
-        defaultCapacity: 0, 
-        // coreDnsComputeType: eks.CoreDnsComputeType.FARGATE,
-        version: eks.KubernetesVersion.V1_17
+        version: eks.KubernetesVersion.V1_17,
+        vpc
       }
     );
 
-    // add default fargate profile
-    const fargate_profile = cluster.addFargateProfile('default-profile', {
-      selectors: [ { namespace: 'default' }, { namespace: 'kube-system' } ]
-    });
-    
     const sa = cluster.addServiceAccount('quarkus-service-account', {
       name: "quarkus-service-account",
       namespace: "default"
     });
 
     new cdk.CfnOutput(this, 'ServiceAccountIamRole', { value: sa.role.roleArn })
-
-    // [workaround] remove coredns annotation for ec2, so it can run on fargate
-    // const coredns_patch_json = {"op": "remove", "path": "/spec/template/metadata/annotations/eks.amazonaws.com~1compute-type"}
-    // new eks.KubernetesPatch(this, "coredns-patch", { 
-    //   cluster,
-    //   resourceName: "deployment/coredns",
-    //   resourceNamespace: "kube-system",
-    //   applyPatch: coredns_patch_json,
-    //   restorePatch: coredns_patch_json
-    // })
-    // coredns_patch.node.addDependency(sa)
-
-    // [workaround] enabling ec2 capacity for coredns - Fix for cycical dependencies when using eks.CoreDnsComputeType.FARGATE
-    // // add dns nodes 
-    cluster.addNodegroup('nodegroup', {
-      instanceType: new ec2.InstanceType('t2.micro'),
-      minSize: 2,
-    });
 
     const appLabel = { app: "quarkus-demo" };
 
@@ -66,6 +41,9 @@ class EksCdkStack extends cdk.Stack {
           metadata: { labels: appLabel },
           spec: {
             serviceAccountName: sa.serviceAccountName,
+            securityContext: {    // To fix the file permission of the access token file, see https://github.com/kubernetes-sigs/external-dns/pull/1185
+              fsGroup: 65534
+            },
             containers: [
               {
                 name: "quarkus-demo-web",
@@ -108,14 +86,13 @@ class EksCdkStack extends cdk.Stack {
     });
 
     table.grantReadWriteData(sa.role)
-
   }
 }
 
 const app = new cdk.App();
 new EksCdkStack(app, 'EksCdkStack', {
   env: {
-    region: process.env.CDK_DEFAULT_REGION,
+    region: "us-east-1",
     account: process.env.CDK_DEFAULT_ACCOUNT,
   }
 });
