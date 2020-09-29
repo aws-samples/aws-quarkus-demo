@@ -47,7 +47,7 @@ class EksCdkStack extends cdk.Stack {
             containers: [
               {
                 name: "quarkus-demo-web",
-                image: "smoell/quarkus_ecs_demo:0.7",
+                image: "moralesl/quarkus-eks-demo:sts-included",
                 ports: [ { containerPort: 8080 } ]
               }
             ]
