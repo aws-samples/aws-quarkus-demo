@@ -47,7 +47,7 @@ class EksCdkStack extends cdk.Stack {
             containers: [
               {
                 name: "quarkus-demo-web",
-                image: "smoell/quarkus_ecs_demo:0.7",
+                image: "moralesl/quarkus-eks-demo:sts-included",
                 ports: [ { containerPort: 8080 } ]
               }
             ]
@@ -62,7 +62,7 @@ class EksCdkStack extends cdk.Stack {
       metadata: { name: "quarkus-demo-svc" },
       spec: {
         type: "LoadBalancer",
-        ports: [ { port: 80, targetPort: 8080 } ],
+        ports: [ { port: 8080, targetPort: 8080 } ],
         selector: appLabel
       }
     };
