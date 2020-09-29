@@ -62,7 +62,7 @@ class EksCdkStack extends cdk.Stack {
       metadata: { name: "quarkus-demo-svc" },
       spec: {
         type: "LoadBalancer",
-        ports: [ { port: 80, targetPort: 8080 } ],
+        ports: [ { port: 8080, targetPort: 8080 } ],
         selector: appLabel
       }
     };
