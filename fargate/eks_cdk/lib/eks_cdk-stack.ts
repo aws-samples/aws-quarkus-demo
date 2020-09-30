@@ -4,6 +4,8 @@ import ec2 = require("@aws-cdk/aws-ec2");
 import eks = require("@aws-cdk/aws-eks");
 import dynamodb = require('@aws-cdk/aws-dynamodb');
 
+import { ALBIngressController } from './ALBIngressController';
+
 class EksCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
@@ -12,13 +14,13 @@ class EksCdkStack extends cdk.Stack {
     const vpc = new ec2.Vpc(this, "quarkus-demo-vpc", {
       maxAzs: 2
     });
-    
+
     // create EKS cluster
-    const cluster = new eks.FargateCluster(this, "quarkus-demo-cluster",{
-        clusterName: "quarkus-demo-cluster",
-        version: eks.KubernetesVersion.V1_17,
-        vpc
-      }
+    const cluster = new eks.FargateCluster(this, "quarkus-demo-cluster", {
+      clusterName: "quarkus-demo-cluster",
+      version: eks.KubernetesVersion.V1_17,
+      vpc
+    }
     );
 
     const sa = cluster.addServiceAccount('quarkus-service-account', {
@@ -48,31 +50,68 @@ class EksCdkStack extends cdk.Stack {
               {
                 name: "quarkus-demo-web",
                 image: "moralesl/quarkus-eks-demo:sts-included",
-                ports: [ { containerPort: 8080 } ]
+                ports: [{ containerPort: 8080 }]
               }
             ]
           }
         }
       }
     };
-    
+
     const service = {
       apiVersion: "v1",
       kind: "Service",
-      metadata: { name: "quarkus-demo-svc" },
+      metadata: {
+        name: "quarkus-demo-svc",
+        annotations: {
+          "alb.ingress.kubernetes.io/target-type": "ip"
+        }
+      },
       spec: {
-        type: "LoadBalancer",
-        ports: [ { port: 8080, targetPort: 8080 } ],
+        type: "NodePort",
+        ports: [{ port: 8080, targetPort: 8080 }],
         selector: appLabel
       }
     };
-    
+
+    const ingress = {
+      apiVersion: "extensions/v1beta1",
+      kind: "Ingress",
+      metadata: {
+         name: "quarkus-demo-ingress",
+         annotations: {
+            "kubernetes.io/ingress.class": "alb",
+            "alb.ingress.kubernetes.io/scheme": "internet-facing",
+            "alb.ingress.kubernetes.io/healthcheck-path": "/health"
+            // "alb.ingress.kubernetes.io/listen-ports": "[{\"HTTP\": 8080}]"
+         },
+         labels: appLabel
+      },
+      spec: {
+         rules: [
+            {
+               http: {
+                  paths: [
+                     {
+                        path: "/*",
+                        backend: {
+                           serviceName: "quarkus-demo-svc",
+                           servicePort: 8080
+                        }
+                     }
+                  ]
+               }
+            }
+         ]
+      }
+   };
+
     // option 1: use a construct
     new eks.KubernetesManifest(this, 'quarkus-demo', {
       cluster,
-      manifest: [ deployment, service ]
+      manifest: [deployment, service, ingress]
     });
-    
+
     // // or, option2: use `addManifest`
     // cluster.addManifest('hello-kub', service, deployment);
 
@@ -86,6 +125,14 @@ class EksCdkStack extends cdk.Stack {
     });
 
     table.grantReadWriteData(sa.role)
+
+    const albIngressController = new ALBIngressController(this, 'ALB-ingress-controller', {
+      cluster: cluster,
+      vpcId: vpc.vpcId,
+      region: this.region,
+      version: '1.1.7'
+    })
+
   }
 }
 
