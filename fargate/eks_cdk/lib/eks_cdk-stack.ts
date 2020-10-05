@@ -5,6 +5,7 @@ import eks = require("@aws-cdk/aws-eks");
 import dynamodb = require('@aws-cdk/aws-dynamodb');
 
 import { ALBIngressController } from './ALBIngressController';
+import { CfnOutput } from '@aws-cdk/core';
 
 class EksCdkStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -20,15 +21,25 @@ class EksCdkStack extends cdk.Stack {
       clusterName: "quarkus-demo-cluster",
       version: eks.KubernetesVersion.V1_17,
       vpc
-    }
-    );
+    });
 
+    // add ALB ingress controller
+    const albIngressController = new ALBIngressController(this, 'ALB-ingress-controller', {
+      cluster: cluster,
+      vpcId: vpc.vpcId,
+      region: this.region,
+      version: '1.1.7'
+    });
+
+    albIngressController.node.addDependency(cluster);
+
+    // add service account
     const sa = cluster.addServiceAccount('quarkus-service-account', {
       name: "quarkus-service-account",
       namespace: "default"
     });
 
-    new cdk.CfnOutput(this, 'ServiceAccountIamRole', { value: sa.role.roleArn })
+    // new cdk.CfnOutput(this, 'ServiceAccountIamRole', { value: sa.role.roleArn })
 
     const appLabel = { app: "quarkus-demo" };
 
@@ -88,32 +99,41 @@ class EksCdkStack extends cdk.Stack {
          labels: appLabel
       },
       spec: {
-         rules: [
-            {
-               http: {
-                  paths: [
-                     {
-                        path: "/*",
-                        backend: {
-                           serviceName: "quarkus-demo-svc",
-                           servicePort: 8080
-                        }
-                     }
-                  ]
-               }
+        rules: [
+          {
+            http: {
+              paths: [
+                {
+                  path: "/*",
+                  backend: {
+                    serviceName: "quarkus-demo-svc",
+                    servicePort: 8080
+                  }
+                }
+              ]
             }
-         ]
+          }
+        ]
       }
-   };
+    };
 
-    // option 1: use a construct
+    // deploy manifest
     new eks.KubernetesManifest(this, 'quarkus-demo', {
       cluster,
       manifest: [deployment, service, ingress]
     });
 
-    // // or, option2: use `addManifest`
-    // cluster.addManifest('hello-kub', service, deployment);
+    // query the load balancer address
+    const loadBalancerDNS = new eks.KubernetesObjectValue(this, 'LoadBalancerAttribute', {
+      cluster: cluster, 
+      objectType: 'ingress',
+      objectName: 'quarkus-demo-ingress',
+      jsonPath: '.status.loadBalancer.ingress[0].hostname', // https://kubernetes.io/docs/reference/kubectl/jsonpath/
+    });
+    
+    new CfnOutput(this, 'LoadBalancerDNS', {
+      value: loadBalancerDNS.value
+    });
 
     // create the application Users dynomodb table
     const table = new dynamodb.Table(this, 'Users', {
@@ -125,13 +145,6 @@ class EksCdkStack extends cdk.Stack {
     });
 
     table.grantReadWriteData(sa.role)
-
-    const albIngressController = new ALBIngressController(this, 'ALB-ingress-controller', {
-      cluster: cluster,
-      vpcId: vpc.vpcId,
-      region: this.region,
-      version: '1.1.7'
-    })
 
   }
 }
