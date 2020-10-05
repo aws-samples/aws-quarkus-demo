@@ -1,6 +1,6 @@
-# Quarkus example project for Amazon ECS with AWS Fargate
+# Quarkus example projects for Amazon ECS and Amazon EKS with AWS Fargate
 
-This example project demonstrates how Quarkus can be used to implement lightweight Java-based applications. 
+This example projects demonstrate how Quarkus can be used to implement lightweight Java-based applications. 
 In this documentation, we'll cover how to
 
 * Compile the application to a native executable
@@ -41,7 +41,7 @@ $ ./mvnw package -Pnative -Dquarkus.native.container-build=true -DskipTests
 
 ## Packaging the application as Docker image
 
-Now we have to build a Docker image containing the native image of our Java application. Under `src/main/docker` we have  two different Dockerfiles: `Dockerfile.jvm` and `Dockerfile.native`. The `Dockerfile.native`-file contains a few GraalVM-specific modifications to support TLS which is necessary for the AWS SDK for Java.
+Now we have to build a Docker image containing the native image of our Java application. Under `src/main/docker` we have  two different Dockerfiles: `Dockerfile.jvm` and `Dockerfile.native`. The `Dockerfile.native`-file contains a few [GraalVM](https://www.graalvm.org/)-specific modifications to support TLS which is necessary for the AWS SDK for Java.
 
 ```
 $ docker build -f src/main/docker/Dockerfile.native -t <repo/image:tag> .
@@ -53,17 +53,21 @@ $ docker push <repo/image:tag>
 After we've built and pushed the Docker image containing the native image of the application, we need to set up the basic infrastructure in `us-east-1`:
 
 ```
+| Amazon ECS | $cd ecs_cdk |
+|------------|-------------|
+| Amazon EKS | $cd eks_cdk |
+
 $ npm install -g aws-cdk
-$ cd ecs_cdk
 $ npm install
 $ cdk deploy  // Deploys the CloudFormation template
 ```
 
 ## Testing the application
 
-After the infrastructure has been created successfully, the outputs of the CloudFormation stack is the load balancer URL. You can test the application using the following statements:
+After the infrastructure has been created successfully, the output `LoadBalancerDNS` of the CloudFormation stack is the load balancer URL. You can test the application using the following statements:
 
 ```
+$ curl -v http://<lb-url>:8080/health // from HealthResource.java Resource
 $ curl -v -d '{"userName":"hmueller", "firstName":"Hans", "lastName":"Mueller", "age":"35"}' -H "Content-Type: application/json" -X POST http://<lb-url>:8080/users
 $ curl -v http://<lb-url>:8080/users/<user-id>
 $ curl -v http://<lb-url>:8080/users
