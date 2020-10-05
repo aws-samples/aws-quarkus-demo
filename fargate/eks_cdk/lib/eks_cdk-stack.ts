@@ -29,7 +29,6 @@ class EksCdkStack extends cdk.Stack {
       region: this.region,
       version: "1.1.7"
     });
-
     albIngressController.node.addDependency(cluster);
 
     // add service account
@@ -40,79 +39,9 @@ class EksCdkStack extends cdk.Stack {
 
     const appLabel = { app: "quarkus-demo" };
 
-    const deployment = {
-      apiVersion: "apps/v1",
-      kind: "Deployment",
-      metadata: { name: "quarkus-demo-deploy" },
-      spec: {
-        replicas: 3,
-        selector: { matchLabels: appLabel },
-        template: {
-          metadata: { labels: appLabel },
-          spec: {
-            serviceAccountName: sa.serviceAccountName,
-            securityContext: {    // To fix the file permission of the access token file, see https://github.com/kubernetes-sigs/external-dns/pull/1185
-              fsGroup: 65534
-            },
-            containers: [
-              {
-                name: "quarkus-demo-web",
-                image: "moralesl/quarkus-eks-demo:sts-included",
-                ports: [{ containerPort: 8080 }]
-              }
-            ]
-          }
-        }
-      }
-    };
-
-    const service = {
-      apiVersion: "v1",
-      kind: "Service",
-      metadata: {
-        name: "quarkus-demo-svc",
-        annotations: {
-          "alb.ingress.kubernetes.io/target-type": "ip"
-        }
-      },
-      spec: {
-        type: "NodePort",
-        ports: [{ port: 8080, targetPort: 8080 }],
-        selector: appLabel
-      }
-    };
-
-    const ingress = {
-      apiVersion: "extensions/v1beta1",
-      kind: "Ingress",
-      metadata: {
-        name: "quarkus-demo-ingress",
-        annotations: {
-          "kubernetes.io/ingress.class": "alb",
-          "alb.ingress.kubernetes.io/scheme": "internet-facing",
-          "alb.ingress.kubernetes.io/healthcheck-path": "/health"
-          // "alb.ingress.kubernetes.io/listen-ports": "[{\"HTTP\": 8080}]"
-        },
-        labels: appLabel
-      },
-      spec: {
-        rules: [
-          {
-            http: {
-              paths: [
-                {
-                  path: "/*",
-                  backend: {
-                    serviceName: "quarkus-demo-svc",
-                    servicePort: 8080
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    };
+    const deployment = EksCdkStack.getQuarkusStsDeploymentK8sDefinition(appLabel, sa);
+    const service = EksCdkStack.getQuarkusServiceK8sDefinition(appLabel);
+    const ingress = EksCdkStack.getQuarkusAlbIngressK8sDefinition(appLabel);
 
     // deploy manifest
     new eks.KubernetesManifest(this, "quarkus-demo", {
@@ -142,6 +71,86 @@ class EksCdkStack extends cdk.Stack {
     });
 
     table.grantReadWriteData(sa.role)
+  }
+
+
+  private static getQuarkusAlbIngressK8sDefinition(appLabel: { app: string }) {
+    return {
+      apiVersion: "extensions/v1beta1",
+      kind: "Ingress",
+      metadata: {
+        name: "quarkus-demo-ingress",
+        annotations: {
+          "kubernetes.io/ingress.class": "alb",
+          "alb.ingress.kubernetes.io/scheme": "internet-facing",
+          "alb.ingress.kubernetes.io/healthcheck-path": "/health"
+        },
+        labels: appLabel
+      },
+      spec: {
+        rules: [
+          {
+            http: {
+              paths: [
+                {
+                  path: "/*",
+                  backend: {
+                    serviceName: "quarkus-demo-svc",
+                    servicePort: 8080
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    };
+  }
+
+  private static getQuarkusServiceK8sDefinition(appLabel: { app: string }) {
+    return {
+      apiVersion: "v1",
+      kind: "Service",
+      metadata: {
+        name: "quarkus-demo-svc",
+        annotations: {
+          "alb.ingress.kubernetes.io/target-type": "ip"
+        }
+      },
+      spec: {
+        type: "NodePort",
+        ports: [{ port: 8080, targetPort: 8080 }],
+        selector: appLabel
+      }
+    };
+  }
+
+  private static getQuarkusStsDeploymentK8sDefinition(appLabel: { app: string }, sa: eks.ServiceAccount) {
+    return {
+      apiVersion: "apps/v1",
+      kind: "Deployment",
+      metadata: { name: "quarkus-demo-deploy" },
+      spec: {
+        replicas: 3,
+        selector: { matchLabels: appLabel },
+        template: {
+          metadata: { labels: appLabel },
+          spec: {
+            serviceAccountName: sa.serviceAccountName,
+            securityContext: {    // To fix the file permission of the access token file, see https://github.com/kubernetes-sigs/external-dns/pull/1185
+              fsGroup: 65534
+            },
+            containers: [
+              {
+                name: "quarkus-demo-web",
+                image: "moralesl/quarkus-eks-demo:sts-included",
+                ports: [{ containerPort: 8080 }]
+              }
+            ]
+          }
+        }
+      }
+    };
   }
 }
 
