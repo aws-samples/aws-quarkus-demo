@@ -44,10 +44,7 @@ class EksCdkStack extends cdk.Stack {
     const ingress = EksCdkStack.getQuarkusAlbIngressK8sDefinition(appLabel);
 
     // deploy manifest
-    new eks.KubernetesManifest(this, "quarkus-demo", {
-      cluster,
-      manifest: [deployment, service, ingress]
-    });
+    cluster.addManifest("quarkus-demo", deployment, service, ingress)
 
     // query the load balancer address
     const loadBalancerDNS = new eks.KubernetesObjectValue(this, "LoadBalancerAttribute", {
