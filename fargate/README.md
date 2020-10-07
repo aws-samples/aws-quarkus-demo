@@ -18,13 +18,6 @@ on AWS SDK for Java V2. The Quarkus extension supports two programming models:
 * Blocking access
 * Asynchronous programming
 
-[DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) is also supported: The downloadable version of DynamoDB lets you write and test applications without 
-accessing the DynamoDB web service. Instead, the database is self-contained on your computer. When you're ready to 
-deploy your application in production, you can make a few minor changes to the code so that it uses the DynamoDB web 
-service.
-
-Simply run `docker run -p 8000:8000 amazon/dynamodb-local` to execute DynamoDB locally.
-
 ## Compiling the application
 
 Compiling the application to an Uber-JAR is very straight forward:
@@ -38,6 +31,28 @@ To compile the application to a native image we have to add a few parameters:
 ```
 $ ./mvnw package -Pnative -Dquarkus.native.container-build=true -DskipTests
 ```
+
+## Local testing
+
+To test the application locally a Docker Compose file is provided. It sets up two containers, one with the compiled Uber-JAR
+and one with [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html):
+The local version of DynamoDB lets you write and test applications without accessing the DynamoDB web service.
+Instead, the database is self-contained on your computer.
+
+Simply run `docker-compose up` to build the application and run DynamoDB locally. The application will run on port `8080`.
+
+In order to create the necessary table in your DynamoDB locally run:
+
+```
+aws dynamodb create-table \
+    --table-name Users \
+    --attribute-definitions AttributeName=userId,AttributeType=S \
+    --key-schema AttributeName=userId,KeyType=HASH \
+    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
+    --endpoint-url http://localhost:8000
+```
+
+For interacting with the application simply go to `http://localhost:8080/`. For further interactions see [Testing the application](#testing-the-application).
 
 ## Packaging the application as Docker image
 
