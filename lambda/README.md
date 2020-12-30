@@ -21,25 +21,22 @@ The architecture of the application is pretty simple and consists of a few class
 
 Compiling the application to an Uber-JAR is very straight forward:
 
-```
-$ mvn clean package
+```shell script
+./mvnw clean package
 ```
 
 ## Native Image build
 
-Native image requires the addition of SSL related dependencies to the `function.zip`.
-
-Please refer to the Quarkus documentation `https://quarkus.io/guides/amazon-lambda#additional-requirements-for-client-ssl`
-If using Linux you can copy these files direct, however if using Docker please follow the `Quarkus` guide.
-
-```
-cp $GRAALVM_HOME/lib/libsunec.o $PROJECT_DIR/src/main/zip.native/
-cp $GRAALVM_HOME/lib/security/cacerts $PROJECT_DIR/src/main/zip.native/
-```
+Native image requires the addition of SSL related dependencies to the `function.zip`. Please refer to the [Quarkus documentation](https://quarkus.io/guides/amazon-lambda#additional-requirements-for-client-ssl) for more details. This sample project contains an exec-maven-plugin configuration that extracts the files from the Docker image and copies them to the target folder.
 
 To compile the application to a native binary and generate the `function.zip` use the below command.
+```shell script
+./mvnw package -Pnative
 ```
-$ mvn package -Pnative -Dnative-image.docker-build=true
+
+Or, if you don't have GraalVM installed, run the native executable build in a container using:
+```shell script
+./mvnw package -Pnative -Dnative-image.docker-build=true
 ```
 
 ## Testing with SAM local
@@ -47,8 +44,8 @@ $ mvn package -Pnative -Dnative-image.docker-build=true
 Modify the DynamoDB configuration as below, and startup DynamoDB-local.
 
 Launch the local API, which should startup on `http://127.0.0.1:3000`
-```
-$ sam local start-api --template sam.jvm.yaml 
+```shell script
+sam local start-api --template sam.jvm.yaml 
 ```
 
 You should see the following output:
@@ -60,10 +57,10 @@ You can now browse to the above endpoints to invoke your functions. You do not n
 * Running on http://127.0.0.1:3000/ (Press CTRL+C to quit)
 ```
 
-After the resources has been created successfully, you can start testing. First we want to create a user:
+After the resources have been created successfully, you can start testing. First we want to create a user:
 
-```
-$ curl -v -d '{"userName":"jdoe", "firstName":"John", "lastName":"Doe", "age":"35"}' -H "Content-Type: application/json" -X POST  http://127.0.0.1:3000/users
+```shell script
+curl -v -d '{"userName":"jdoe", "firstName":"John", "lastName":"Doe", "age":"35"}' -H "Content-Type: application/json" -X POST  http://127.0.0.1:3000/users
 ```
 
 Logging to the active SAM local API will appear:
@@ -79,11 +76,11 @@ REPORT RequestId: 129e40ca-98ad-1f53-2a5d-08fcd63c1802  Init Duration: 5583.39 m
 
 Now we can list all users that we have created:
 
-```
-$ curl -v http://127.0.0.1:3000/users
+```shell script
+curl -v http://127.0.0.1:3000/users
 ```
 
-Output should be like:
+The output should be like:
 
 ```
 [{"userId":"a700af5b-af80-4a6d-acfd-a9881568ebdd","userName":"jdoe","firstName":"John","lastName":"Doe","age":35},{"userId":"77492694-cdec-40a0-a27f-38173960c8e0","userName":"jdoe","firstName":"John","lastName":"Doe","age":35}]
@@ -91,12 +88,18 @@ Output should be like:
 
 ### DynamoDB Local
 [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) is also supported: 
-The downloadable version of DynamoDB lets you write and test applications without  accessing the DynamoDB web service. Instead, the database is self-contained on your computer. When you're ready to  deploy your application in production, you can make a few minor changes to the code so that it uses the DynamoDB web service.
+The downloadable version of DynamoDB lets you write and test applications without accessing the DynamoDB web service. Instead, the database is self-contained on your computer. When you're ready to  deploy your application in production, you can make a few minor changes to the code so that it uses the DynamoDB web service.
 
 Simply run the below command to execute DynamoDB locally.
 
+```shell script
+docker run -p 8000:8000 amazon/dynamodb-local  -jar DynamoDBLocal.jar -inMemory -sharedDb
 ```
-$ docker run -p 8000:8000 amazon/dynamodb-local  -jar DynamoDBLocal.jar -inMemory -sharedDb
+
+To create a table execute:
+
+```shell script
+aws dynamodb create-table --table-name Users --attribute-definitions AttributeName=userId,AttributeType=S --key-schema AttributeName=userId,KeyType=HASH --billing-mode PAY_PER_REQUEST --endpoint-url http://localhost:8000
 ```
 
 Update the `application.properties` to use the local DynamoDB
@@ -109,6 +112,8 @@ quarkus.dynamodb.aws.credentials.type=static
 quarkus.dynamodb.aws.credentials.static-provider.access-key-id=test-key
 quarkus.dynamodb.aws.credentials.static-provider.secret-access-key=test-secret
 ```
+
+Please note in case you see connection refused errors that you may need to replace localhost with your local hostname (or create a docker bridge network) depending on your configuration.
 
 Where:
 ```
@@ -123,18 +128,18 @@ After we've built the AWS Lambda function (native-image or JVM-based), we need t
 
 The following commands package and deploy the JVM-based version of the application.
 
-```
-$ sam package --template-file sam.jvm.yaml --output-template-file output.yaml --s3-bucket <your_s3_bucket>
+```shell script
+sam package --template-file sam.jvm.yaml --output-template-file output.yaml --s3-bucket <your_s3_bucket>
 
-$ sam deploy --template-file output.yaml --stack-name APIGatewayQuarkusDemo --capabilities CAPABILITY_IAM
+sam deploy --template-file output.yaml --stack-name APIGatewayQuarkusDemo --capabilities CAPABILITY_IAM
 ```
 
 If you want to deploy the native version of the application, you have to use a different SAM template.
 
-```
-$ sam package --template-file sam.native.yaml --output-template-file output.native.yaml --s3-bucket <your_s3_bucket>
+```shell script
+sam package --template-file sam.native.yaml --output-template-file output.native.yaml --s3-bucket <your_s3_bucket>
 
-$ sam deploy --template-file output.native.yaml --stack-name APIGatewayQuarkusDemo --capabilities CAPABILITY_IAM
+sam deploy --template-file output.native.yaml --stack-name APIGatewayQuarkusDemo --capabilities CAPABILITY_IAM
 ```
 
 During deployment, the CloudFormation template creates the AWS Lambda function, an Amazon DynamoDB table, an Amazon API Gateway REST-API, and all necessary IAM roles.
@@ -148,40 +153,40 @@ After the resources has been created successfully, you can start testing.
 The AWS SAM CLI allows you to run your Lambda functions locally on your laptop in a simulated Lambda environment. This requires docker to be installed. 
 Run the following SAM CLI command to locally test your lambda function, passing the appropriate SAM template. The event parameter takes any JSON file, in this case the sample payload.json.
 
-```
-$ sam local invoke --template target/sam.jvm.yaml --event payload.json
+```shell script
+sam local invoke --template target/sam.jvm.yaml --event payload.json
 ```
 
 The native image can also be locally tested using the sam.native.yaml template:
 
-```
-$ sam local invoke --template target/sam.native.yaml --event payload.json
+```shell script
+sam local invoke --template target/sam.native.yaml --event payload.json
 ```
 
 ### Testing the application in AWS
 
 First we want to create a user:
 
-```
-$ curl -v -d '{"userName":"jdoe", "firstName":"John", "lastName":"Doe", "age":"35"}' -H "Content-Type: application/json" -X POST  https://<your-api-gateway-url>/prod/users
+```shell script
+curl -v -d '{"userName":"jdoe", "firstName":"John", "lastName":"Doe", "age":"35"}' -H "Content-Type: application/json" -X POST  https://<your-api-gateway-url>/prod/users
 ```
 
 Now we can list all users that we have created:
 
-```
-$ curl -v https://<your-api-gateway-url>/prod/users
+```shell script
+curl -v https://<your-api-gateway-url>/prod/users
 ```
 
 Of course we can get a specific user with the `userId`:
 
-```
-$ curl -v -X GET 'https://<your-api-gateway-url>/prod/users?userId=<userId>'
+```shell script
+curl -v -X GET 'https://<your-api-gateway-url>/prod/users?userId=<userId>'
 ```
 
-If we want to delete the user that we've created recently, we only need to specifc the `userId`:
+If we want to delete the user that we've created recently, we only need to specify the `userId`:
 
-```
-$ curl -v -X DELETE 'https://<your-api-gateway-url>/prod/users/<userId>'
+```shell script
+curl -v -X DELETE 'https://<your-api-gateway-url>/prod/users/<userId>'
 ```
 
 ## Contributing
