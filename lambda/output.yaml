@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: AWS Serverless Quarkus HTTP - com.amazon::LambdaQuarkus
+Resources:
+  ApiGatewayApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: Api Gateway for Quarkus demo
+      StageName: prod
+  LambdaQuarkusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
+      Runtime: java11
+      CodeUri: s3://smoell-sam/863bdf2a93128c9dd632e6eda3569885
+      MemorySize: 256
+      Timeout: 15
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: Users
+      Events:
+        LambdaQuarkusGetAll:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ApiGatewayApi
+            Path: /users
+            Method: GET
+        LambdaQuarkusGetUser:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ApiGatewayApi
+            Path: /users/{userId}
+            Method: GET
+        LambdaQuarkusDeleteUser:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ApiGatewayApi
+            Path: /users/{userId}
+            Method: DELETE
+        LambdaQuarkusAddUser:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ApiGatewayApi
+            Path: /users
+            Method: POST
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Users
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: userId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: userId
+        KeyType: HASH
+Outputs:
+  ApiUrl:
+    Description: URL of the users listing in the prod stage
+    Value:
+      Fn::Sub: https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/prod/users
