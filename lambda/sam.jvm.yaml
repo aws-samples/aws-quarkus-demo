@@ -14,7 +14,7 @@
       Properties:
         Handler: io.quarkus.amazon.lambda.runtime.QuarkusStreamHandler::handleRequest
         Runtime: java11
-        CodeUri: target/LambdaQuarkus-1.0-SNAPSHOT-runner.jar
+        CodeUri: target/LambdaQuarkus-1.1-SNAPSHOT-runner.jar
         MemorySize: 256
         Timeout: 15
         Policies:
