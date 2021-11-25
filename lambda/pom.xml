@@ -13,9 +13,9 @@
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <quarkus.platform.artifact-id>quarkus-universe-bom</quarkus.platform.artifact-id>
       <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
-      <quarkus.platform.version>2.0.0.Final</quarkus.platform.version>
+      <quarkus.platform.version>2.5.0.Final</quarkus.platform.version>
       <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
-      <quarkus.image>quay.io/quarkus/ubi-quarkus-native-image:21.1.0-java11</quarkus.image>
+      <quarkus.image>quay.io/quarkus/ubi-quarkus-native-image:21.3.0-java11</quarkus.image>
    </properties>
    <dependencyManagement>
       <dependencies>
