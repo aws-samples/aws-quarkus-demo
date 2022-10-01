@@ -1,12 +1,14 @@
-import * as cdk from "@aws-cdk/core";
-import * as ec2 from "@aws-cdk/aws-ec2";
-import * as ecs from "@aws-cdk/aws-ecs";
-import * as dynamodb from "@aws-cdk/aws-dynamodb";
-import * as ecs_patterns from "@aws-cdk/aws-ecs-patterns";
-import * as iam from "@aws-cdk/aws-iam";
+import * as cdk from 'aws-cdk-lib';
+import { Stack, StackProps } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import { aws_ec2 as ec2 } from 'aws-cdk-lib';
+import { aws_ecs as ecs } from 'aws-cdk-lib';
+import { aws_dynamodb as dynamodb } from 'aws-cdk-lib';
+import { aws_ecs_patterns as ecs_patterns } from 'aws-cdk-lib';
+import { aws_iam as iam } from 'aws-cdk-lib';
 
 class EcsCdkStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     const vpc = new ec2.Vpc(this, "quarkus-demo-vpc", {
