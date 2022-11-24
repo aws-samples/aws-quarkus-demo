@@ -1,4 +1,4 @@
-# Quarkus example projects for Amazon ECS, Amazon EKS with AWS Fargate and AWS Lambda
+# Quarkus example projects for Amazon ECS with AWS Fargate, Amazon EKS with AWS Fargate, and AWS Lambda
 
 This repository contains different examples how [Quarkus](https://quarkus.io) can be used in combination with different AWS services:
 
