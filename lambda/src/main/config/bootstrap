@@ -2,4 +2,4 @@
 
 # wrapper bootstrap script for lambda custom runtime and quarkus
 
-./runner -Djava.library.path=./ -Djavax.net.ssl.trustStore=./cacerts
+./runner -Djava.library.path=./ -Djavax.net.ssl.trustStore=./ssl/cacerts
